@@ -1,0 +1,78 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  entry: CollectionEntry<'pages'>;
+}
+
+const { entry } = Astro.props;
+const featuredImage = entry.data.featuredImage ?? '/images/2022/Rectangle-1-1.png';
+---
+<BaseLayout title={entry.data.title} description={entry.data.description} image={featuredImage}>
+  <slot name="header" />
+
+  <section class="page-hero section--sm">
+    <div class="container reveal">
+      <h1>{entry.data.title}</h1>
+      {entry.data.description && <p>{entry.data.description}</p>}
+    </div>
+  </section>
+
+  {featuredImage && (
+    <div class="container page-featured reveal">
+      <img
+        src={featuredImage}
+        alt={entry.data.title}
+        class="page-featured__image"
+        width="1280"
+        height="720"
+        loading="eager"
+      />
+    </div>
+  )}
+
+  <section class="section page-content">
+    <div class="container reveal">
+      <div class="page-content__body prose">
+        <slot />
+      </div>
+    </div>
+  </section>
+
+  <slot name="footer" />
+</BaseLayout>
+
+<style>
+  .page-hero {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-hero p {
+    max-width: 42rem;
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: var(--color-muted);
+  }
+
+  .page-featured {
+    padding-top: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .page-featured__image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    box-shadow: var(--shadow-md);
+  }
+
+  .page-content__body {
+    max-width: 720px;
+    margin-inline: auto;
+    line-height: 1.8;
+  }
+
+  .page-content__body :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

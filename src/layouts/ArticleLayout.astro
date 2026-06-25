@@ -1,0 +1,93 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image: string;
+  date?: string;
+}
+
+const { title, description, image, date } = Astro.props;
+---
+<BaseLayout title={title} description={description} image={image}>
+  <slot name="header" slot="header" />
+  <article class="article">
+    <header class="article__header container reveal">
+      <div class="article__hero">
+        <img
+          src={image}
+          alt={title}
+          width={1200}
+          height={675}
+          loading="eager"
+          class="article__image"
+        />
+      </div>
+      <div class="article__meta">
+        {date && <time datetime={date}>{new Date(date).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</time>}
+        <h1>{title}</h1>
+        {description && <p class="article__excerpt">{description}</p>}
+      </div>
+    </header>
+    <div class="article__body container prose reveal">
+      <slot />
+    </div>
+  </article>
+  <slot name="footer" slot="footer" />
+</BaseLayout>
+
+<style>
+  .article {
+    padding-block: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .article__header {
+    margin-bottom: 2.5rem;
+  }
+
+  .article__hero {
+    margin-bottom: 2rem;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    max-height: 480px;
+    background: var(--color-bg-warm);
+  }
+
+  .article__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .article__hero:hover .article__image {
+    transform: scale(1.02);
+  }
+
+  .article__meta time {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .article__meta h1 {
+    max-width: 20ch;
+    margin-bottom: 0.75rem;
+  }
+
+  .article__excerpt {
+    font-size: 1.125rem;
+    color: var(--color-muted);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .article__body {
+    padding-bottom: 3rem;
+  }
+</style>

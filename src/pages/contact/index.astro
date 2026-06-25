@@ -1,0 +1,79 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Contact from '../../components/Contact.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 4);
+---
+<PageLayout
+  title="Contact"
+  description="Heb jij een vraag voor Ilse over IlseMagazine.nl? Of wil je misschien een samenwerking aangaan? Neem hier contact op."
+>
+  <Header slot="header" />
+  <div class="container">
+    <header class="page-header reveal">
+      <p class="page-header__label">Contact</p>
+      <h1>Wil je contact met IlseMagazine.nl of zou je een samenwerking aan willen gaan?</h1>
+      <p>Neem contact op middels onderstaand contact formulier. Ik streef er naar alle vragen zo snel mogelijk te beantwoorden.</p>
+    </header>
+    <div class="contact-grid">
+      <div class="reveal">
+        <Contact />
+      </div>
+      <aside class="contact-aside reveal">
+        <h2>Andere artikelen</h2>
+        <div class="contact-aside__posts">
+          {posts.map((post) => (
+            <BlogCard entry={post} />
+          ))}
+        </div>
+      </aside>
+    </div>
+  </div>
+  <Footer slot="footer" />
+</PageLayout>
+
+<style>
+  .page-header {
+    max-width: 52rem;
+    margin-bottom: 3rem;
+  }
+
+  .page-header__label {
+    font-family: var(--font-nav);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 4vw, 4rem);
+    padding-bottom: 3rem;
+  }
+
+  .contact-aside h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-aside__posts {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 899px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

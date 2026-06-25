@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BlogCard from '../../components/BlogCard.astro';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+<BaseLayout
+  title="Blog"
+  description="Lees de nieuwste blogs en artikelen op IlseMagazine.nl."
+>
+  <Header slot="header" />
+
+  <section class="page-hero section--sm">
+    <div class="container reveal">
+      <h1>Blog</h1>
+      <p>Ontdek de nieuwste artikelen, nieuwsitems en inspiratie op IlseMagazine.nl.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="blog-grid">
+        {posts.map((post, i) => (
+          <div class="reveal" style={`transition-delay: ${i * 0.04}s`}>
+            <BlogCard entry={post} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .page-hero {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-hero p {
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    max-width: 36rem;
+    color: var(--color-muted);
+  }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  @media (min-width: 600px) {
+    .blog-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .blog-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

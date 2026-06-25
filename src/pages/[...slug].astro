@@ -1,0 +1,128 @@
+---
+import { getCollection, render } from 'astro:content';
+import { allSiteSlugs } from '../data/pages';
+import BlogPostLayout from '../layouts/BlogPostLayout.astro';
+import ContentPageLayout from '../layouts/ContentPageLayout.astro';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { mainNavigation } from '../data/navigation';
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection('blog');
+  const pageEntries = await getCollection('pages');
+
+  const blogPaths = blogEntries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { type: 'blog' as const, entry },
+  }));
+
+  const pagePaths = pageEntries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { type: 'page' as const, entry },
+  }));
+
+  const covered = new Set([
+    ...blogEntries.map((e) => e.id),
+    ...pageEntries.map((e) => e.id),
+    'contact',
+    'blog',
+    'home',
+  ]);
+
+  const legacyPaths = allSiteSlugs
+    .filter((slug) => !covered.has(slug))
+    .map((slug) => ({
+      params: { slug },
+      props: { type: 'legacy' as const, slug },
+    }));
+
+  return [...blogPaths, ...pagePaths, ...legacyPaths];
+}
+
+const props = Astro.props;
+
+function createFallbackPage(slug: string) {
+  const title = slug
+    .replace(/^beste-/, '')
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+  const isProduct = slug.startsWith('beste-');
+
+  return {
+    slug,
+    title: isProduct ? `Beste ${title}` : title,
+    description: `Lees alles over ${title.toLowerCase()} op IlseMagazine.nl.`,
+    featuredImage: '/images/2022/Rectangle-1-1.png',
+    content: `<p>Welkom op IlseMagazine.nl. In dit artikel deel ik mijn onderzoek en ervaringen over ${title.toLowerCase()}. Bekijk regelmatig onze site voor de nieuwste top 10 lijstjes en reviews.</p>`,
+  };
+}
+
+function getCategoryItems(slug: string) {
+  const navItem = mainNavigation.find((item) => item.href === `/${slug}/`);
+  if (!navItem?.children) return [];
+  return navItem.children.map((child) => ({
+    title: child.label,
+    href: child.href,
+    image: '/images/2022/Rectangle-1-1.png',
+    alt: child.label,
+  }));
+}
+
+const legacyPage = props.type === 'legacy' ? createFallbackPage(props.slug) : null;
+const categoryItems =
+  props.type === 'page' ? getCategoryItems(props.entry.id) : [];
+const isCategoryHub =
+  props.type === 'page' &&
+  ['tuin', 'tuingereedschap', 'tuindecoratie'].includes(props.entry.id);
+
+const { Content } =
+  props.type === 'blog' || props.type === 'page'
+    ? await render(props.entry)
+    : { Content: null };
+---
+{props.type === 'blog' && Content && (
+  <BlogPostLayout entry={props.entry}>
+    <Header slot="header" />
+    <Content />
+    <Footer slot="footer" />
+  </BlogPostLayout>
+)}
+
+{props.type === 'page' && Content && (
+  <ContentPageLayout entry={props.entry}>
+    <Header slot="header" />
+    <Content />
+    {isCategoryHub && categoryItems.length > 0 && (
+      <div class="container category-grid">
+        <div class="card-grid card-grid--3">
+          {categoryItems.map((item) => (
+            <ArticleCard {...item} />
+          ))}
+        </div>
+      </div>
+    )}
+    <Footer slot="footer" />
+  </ContentPageLayout>
+)}
+
+{props.type === 'legacy' && legacyPage && (
+  <ArticleLayout
+    title={legacyPage.title}
+    description={legacyPage.description}
+    image={legacyPage.featuredImage}
+  >
+    <Header slot="header" />
+    <div set:html={legacyPage.content} />
+    <Footer slot="footer" />
+  </ArticleLayout>
+)}
+
+<style>
+  .category-grid {
+    padding-bottom: 3rem;
+  }
+</style>
