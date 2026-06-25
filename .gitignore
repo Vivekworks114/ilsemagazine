@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+migration.log
+
+# Python (migration scripts)
+__pycache__/
+*.py[cod]
+
+# Migration artifacts
+migration-summary.json
+
+# Editor
+.idea/
+.vscode/
