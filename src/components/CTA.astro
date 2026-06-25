@@ -1,0 +1,40 @@
+---
+import ArticleCard from './ArticleCard.astro';
+import { reviewsSection } from '../data/homepage';
+---
+<section class="cta section section--sm section--gradient section--gradient-right" id="review">
+  <div class="container">
+    <header class="cta__header reveal">
+      <h4 class="section-title">{reviewsSection.title}</h4>
+      <p>{reviewsSection.description}</p>
+    </header>
+    <div class="card-grid card-grid--3">
+      {reviewsSection.items.map((item) => (
+        <ArticleCard {...item} />
+      ))}
+    </div>
+    <p class="cta__tagline reveal">
+      Door middel van blogs, nieuwsitems en top 10 producten lijstjes, voorziet IlseMagazine.nl de lezer van uitgebreid en vakkundig advies op het gebied van tuinieren.
+    </p>
+  </div>
+</section>
+
+<style>
+  .cta__header {
+    margin-bottom: 2.25rem;
+    max-width: 72ch;
+  }
+
+  .cta__header p {
+    margin: 0;
+  }
+
+  .cta__tagline {
+    margin-top: 3rem;
+    font-family: var(--font-accent);
+    font-size: 1.25rem;
+    font-weight: 600;
+    max-width: 48rem;
+    line-height: 1.5;
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+import { mainNavigation } from '../data/navigation';
+import Navigation from './Navigation.astro';
+
+const currentPath = Astro.url.pathname;
+---
+<header class="header">
+  <div class="header__inner container">
+    <a href="/" class="header__logo" aria-label="IlseMagazine - Home">
+      <img src="/images/brand/logo.png" alt="IlseMagazine" width="158" height="24" />
+    </a>
+
+    <div class="header__nav">
+      <Navigation items={mainNavigation} currentPath={currentPath} />
+    </div>
+
+    <button class="nav-toggle" type="button" aria-label="Menu toggle" aria-expanded="false">
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1rem;
+  }
+
+  .header__logo img {
+    width: clamp(120px, 18vw, 158px);
+    height: auto;
+    transition: opacity var(--transition);
+  }
+
+  .header__logo:hover img {
+    opacity: 0.8;
+  }
+
+  .header__nav {
+    display: none;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .nav-toggle__bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--color-primary);
+    transition: transform var(--transition), opacity var(--transition);
+  }
+
+  @media (min-width: 1025px) {
+    .header__nav {
+      display: block;
+    }
+
+    .nav-toggle {
+      display: none;
+    }
+  }
+</style>

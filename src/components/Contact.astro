@@ -1,0 +1,60 @@
+---
+---
+<section class="contact-form">
+  <form class="form" method="post" action="#" aria-label="Contactformulier">
+    <div class="form__group">
+      <label for="name" class="form__label">Naam</label>
+      <input type="text" id="name" name="name" class="form__input" placeholder="Naam" required />
+    </div>
+    <div class="form__group">
+      <label for="email" class="form__label">Email</label>
+      <input type="email" id="email" name="email" class="form__input" placeholder="Email" required />
+    </div>
+    <div class="form__group">
+      <label for="message" class="form__label">Bericht</label>
+      <textarea id="message" name="message" class="form__textarea" rows="4" placeholder="Bericht" required></textarea>
+    </div>
+    <button type="submit" class="btn btn--submit">Versturen</button>
+  </form>
+</section>
+
+<style>
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 560px;
+  }
+
+  .form__label {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+  }
+
+  .form__input,
+  .form__textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--color-primary);
+    background: var(--color-secondary);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .form__input:focus,
+  .form__textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(15, 15, 15, 0.08);
+  }
+
+  .form__textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+</style>

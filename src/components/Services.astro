@@ -1,0 +1,52 @@
+---
+import ArticleCard from './ArticleCard.astro';
+import { householdSection } from '../data/homepage';
+---
+<section class="services section section--sm">
+  <div class="container">
+    <header class="services__header reveal">
+      <h4 class="section-title">{householdSection.title}</h4>
+      <p>{householdSection.description}</p>
+    </header>
+    <div class="services__grid">
+      {householdSection.items.map((item) => (
+        <ArticleCard {...item} variant="compact" />
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .services__header {
+    margin-bottom: 2.25rem;
+    max-width: 72ch;
+  }
+
+  .services__header p {
+    margin: 0;
+  }
+
+  .services__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 2rem;
+  }
+
+  .services__grid :global(.article-card) {
+    margin-bottom: 2.25rem;
+  }
+
+  @media (max-width: 1023px) {
+    .services__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 599px) {
+    .services__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
