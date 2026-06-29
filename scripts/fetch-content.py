@@ -30,7 +30,7 @@ def extract(html: str, slug: str) -> dict:
     desc = html_lib.unescape(desc_m.group(1)) if desc_m else ""
 
     parts = re.findall(
-        r'class="elementor-widget-text-editor"[^>]*>.*?elementor-widget-container">\s*(.*?)</div>',
+        r'elementor-widget-text-editor[^>]*>\s*<div class="elementor-widget-container">\s*(.*?)</div>',
         html,
         re.S,
     )

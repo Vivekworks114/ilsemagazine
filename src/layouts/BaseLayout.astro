@@ -35,33 +35,6 @@ const fullTitle =
     </main>
     <slot name="footer" />
     <script>
-      const nav = document.querySelector('.nav');
-      const toggle = document.querySelector('.nav-toggle');
-
-      toggle?.addEventListener('click', () => {
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', String(!expanded));
-        nav?.classList.toggle('nav--open');
-        document.body.classList.toggle('nav-open');
-      });
-
-      document.querySelectorAll('.nav-item--has-children > .nav-link').forEach((link) => {
-        link.addEventListener('click', (e) => {
-          if (window.innerWidth <= 1024) {
-            e.preventDefault();
-            link.parentElement?.classList.toggle('nav-item--expanded');
-          }
-        });
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          nav?.classList.remove('nav--open');
-          toggle?.setAttribute('aria-expanded', 'false');
-          document.body.classList.remove('nav-open');
-        }
-      });
-
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -80,6 +53,8 @@ const fullTitle =
 
 <style is:global>
   @import '../styles/global.css';
+  @import '../styles/navigation.css';
+  @import '../styles/footer.css';
 
   body.nav-open {
     overflow: hidden;

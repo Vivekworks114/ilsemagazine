@@ -12,20 +12,45 @@ function isActive(href: string) {
   if (href === '/') return currentPath === '/' || currentPath === '';
   return currentPath.startsWith(href);
 }
+
+const arrowIcon = `<svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 ---
-<nav class="nav" aria-label="Hoofdmenu">
+<nav class="nav" id="site-nav" aria-label="Hoofdmenu">
   <ul class="nav__list">
     {items.map((item) => (
       <li class:list={['nav__item', item.children && 'nav-item--has-children']}>
-        <a
-          href={item.href}
-          class:list={['nav-link', isActive(item.href) && 'nav-link--active']}
-          aria-current={isActive(item.href) ? 'page' : undefined}
-        >
-          {item.label}
-        </a>
+        <div class="nav__row">
+          <a
+            href={item.href}
+            class:list={['nav-link', isActive(item.href) && 'nav-link--active']}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            {...(item.children ? { 'aria-haspopup': 'true' } : {})}
+          >
+            {item.label}
+            {item.children && (
+              <span class="nav-link__arrow" set:html={arrowIcon} />
+            )}
+          </a>
+          {item.children && (
+            <button
+              type="button"
+              class="nav__expand"
+              aria-label={`${item.label} submenu openen`}
+              aria-expanded="false"
+            >
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          )}
+        </div>
         {item.children && (
           <ul class="nav__submenu">
+            <li class="nav__submenu-overview">
+              <a href={item.href} class="nav__sublink nav__sublink--overview">
+                Alle {item.label.toLowerCase()} &rarr;
+              </a>
+            </li>
             {item.children.map((child) => (
               <li>
                 <a href={child.href} class="nav__sublink">{child.label}</a>
@@ -37,121 +62,3 @@ function isActive(href: string) {
     ))}
   </ul>
 </nav>
-
-<style>
-  .nav__list {
-    display: flex;
-    align-items: center;
-    gap: clamp(1rem, 2.5vw, 2rem);
-  }
-
-  .nav__item {
-    position: relative;
-  }
-
-  .nav-link {
-    font-family: var(--font-nav);
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--color-primary);
-    padding: 0.5rem 0;
-    display: inline-block;
-    transition: opacity var(--transition);
-  }
-
-  .nav-link:hover,
-  .nav-link--active {
-    opacity: 0.65;
-  }
-
-  .nav__submenu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    min-width: 220px;
-    background: var(--color-secondary);
-    border: 1px solid var(--color-border);
-    padding: 0.75rem 0;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(8px);
-    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
-    z-index: 100;
-    box-shadow: var(--shadow-md);
-  }
-
-  .nav-item--has-children:hover .nav__submenu,
-  .nav-item--has-children:focus-within .nav__submenu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  .nav__sublink {
-    display: block;
-    padding: 0.5rem 1.25rem;
-    font-family: var(--font-nav);
-    font-size: 0.8125rem;
-    color: var(--color-primary);
-    transition: background var(--transition);
-  }
-
-  .nav__sublink:hover {
-    background: var(--color-bg);
-  }
-
-  @media (max-width: 1024px) {
-    .nav {
-      position: fixed;
-      inset: 0;
-      top: 60px;
-      background: var(--color-bg);
-      padding: 1.5rem;
-      transform: translateX(100%);
-      transition: transform var(--transition);
-      overflow-y: auto;
-      z-index: 999;
-    }
-
-    .nav--open {
-      transform: translateX(0);
-    }
-
-    .nav__list {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0;
-    }
-
-    .nav-link {
-      padding: 1rem 0;
-      font-size: 1.125rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .nav__submenu {
-      position: static;
-      opacity: 1;
-      visibility: hidden;
-      max-height: 0;
-      overflow: hidden;
-      transform: none;
-      border: none;
-      box-shadow: none;
-      background: transparent;
-      padding: 0;
-      transition: max-height var(--transition), visibility var(--transition);
-    }
-
-    .nav-item--expanded .nav__submenu {
-      visibility: visible;
-      max-height: 600px;
-      padding-bottom: 0.5rem;
-    }
-
-    .nav__sublink {
-      padding: 0.625rem 0 0.625rem 1rem;
-      font-size: 0.9375rem;
-    }
-  }
-</style>

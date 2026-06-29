@@ -3,11 +3,21 @@ import { getCollection, render } from 'astro:content';
 import { allSiteSlugs } from '../data/pages';
 import BlogPostLayout from '../layouts/BlogPostLayout.astro';
 import ContentPageLayout from '../layouts/ContentPageLayout.astro';
+import ElementorPageLayout from '../layouts/ElementorPageLayout.astro';
 import ArticleLayout from '../layouts/ArticleLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { mainNavigation } from '../data/navigation';
+
+const liveHtmlModules = import.meta.glob<string>(
+  '../data/page-html/*.html',
+  { query: '?raw', import: 'default', eager: true }
+);
+
+function getLiveHtml(slug: string): string | undefined {
+  return liveHtmlModules[`../data/page-html/${slug}.html`];
+}
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
@@ -79,12 +89,38 @@ const isCategoryHub =
   props.type === 'page' &&
   ['tuin', 'tuingereedschap', 'tuindecoratie'].includes(props.entry.id);
 
+const isProductPage =
+  props.type === 'page' && props.entry.data.pageType === 'product';
+
+const liveHtml =
+  props.type === 'blog'
+    ? getLiveHtml(props.entry.id)
+    : props.type === 'page' && isProductPage
+      ? getLiveHtml(props.entry.id)
+      : undefined;
+
+const useLiveHtml =
+  props.type === 'blog'
+    ? props.entry.data.useLiveHtml && liveHtml
+    : isProductPage && liveHtml;
+
 const { Content } =
-  props.type === 'blog' || props.type === 'page'
+  props.type === 'blog' || (props.type === 'page' && !useLiveHtml)
     ? await render(props.entry)
     : { Content: null };
 ---
-{props.type === 'blog' && Content && (
+{props.type === 'blog' && useLiveHtml && (
+  <ElementorPageLayout
+    title={props.entry.data.title}
+    description={props.entry.data.description}
+    html={liveHtml!}
+  >
+    <Header slot="header" />
+    <Footer slot="footer" />
+  </ElementorPageLayout>
+)}
+
+{props.type === 'blog' && !useLiveHtml && Content && (
   <BlogPostLayout entry={props.entry}>
     <Header slot="header" />
     <Content />
@@ -92,7 +128,18 @@ const { Content } =
   </BlogPostLayout>
 )}
 
-{props.type === 'page' && Content && (
+{props.type === 'page' && useLiveHtml && (
+  <ElementorPageLayout
+    title={props.entry.data.title}
+    description={props.entry.data.description}
+    html={liveHtml!}
+  >
+    <Header slot="header" />
+    <Footer slot="footer" />
+  </ElementorPageLayout>
+)}
+
+{props.type === 'page' && !useLiveHtml && Content && (
   <ContentPageLayout entry={props.entry}>
     <Header slot="header" />
     <Content />

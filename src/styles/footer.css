@@ -1,0 +1,119 @@
+/* Footer matching ilsemagazine.nl Elementor layout */
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: clamp(2.5rem, 5vw, 4rem) 0 0;
+}
+
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.site-footer__brand img {
+  width: 158px;
+  height: auto;
+  margin-bottom: 1.25rem;
+}
+
+.site-footer__brand-text {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.site-footer__brand-text p {
+  margin-bottom: 0.75rem;
+}
+
+.site-footer__brand-text a {
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+.site-footer__brand-text a:hover {
+  opacity: 0.7;
+}
+
+.site-footer__brand-text strong {
+  font-weight: 700;
+}
+
+.site-footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: 1.25rem 0;
+}
+
+.site-footer__social a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-primary);
+  transition: opacity var(--transition);
+}
+
+.site-footer__social a:hover {
+  opacity: 0.65;
+}
+
+.site-footer__copyright {
+  font-family: var(--font-nav);
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  margin: 1rem 0 0;
+}
+
+.site-footer__heading {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 0.875rem;
+}
+
+.site-footer__links p {
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+.site-footer__links a {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+
+.site-footer__links a:hover {
+  opacity: 0.65;
+}
+
+@media (max-width: 1100px) {
+  .site-footer__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .site-footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-footer__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer__grid {
+    grid-template-columns: 1fr;
+  }
+}

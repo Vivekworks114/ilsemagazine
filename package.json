@@ -10,7 +10,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "migrate": "python3 scripts/migrate-wordpress.py"
+    "migrate": "python3 scripts/migrate-wordpress.py",
+    "migrate:products": "python3 scripts/migrate-products.py",
+    "migrate:html": "python3 scripts/migrate-live-html.py",
+    "migrate:html:force": "python3 scripts/migrate-live-html.py --force",
+    "verify:links": "python3 scripts/verify-links.py"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.0",

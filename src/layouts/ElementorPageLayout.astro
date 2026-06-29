@@ -1,0 +1,73 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  html: string;
+}
+
+const { title, description, html } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <slot name="header" />
+
+  <article class="elementor-page">
+    <div class="elementor-page__inner container">
+      <div class="elementor-content" set:html={html} />
+    </div>
+  </article>
+
+  <slot name="footer" />
+</BaseLayout>
+
+<script>
+  function initAccordions() {
+    document.querySelectorAll('.elementor-accordion-item').forEach((item) => {
+      const title = item.querySelector('.elementor-tab-title');
+      const content = item.querySelector('.elementor-tab-content');
+      if (!title || !content) return;
+
+      content.style.display = 'none';
+      title.setAttribute('aria-expanded', 'false');
+
+      title.addEventListener('click', () => {
+        const expanded = title.getAttribute('aria-expanded') === 'true';
+        title.setAttribute('aria-expanded', String(!expanded));
+        content.style.display = expanded ? 'none' : 'block';
+        item.classList.toggle('elementor-active', !expanded);
+      });
+    });
+  }
+
+  function initTocToggle() {
+    document.querySelectorAll('.elementor-toc__header').forEach((header) => {
+      const body =
+        header.parentElement?.querySelector('.elementor-toc__body') ??
+        header.parentElement?.querySelector('.elementor-toc__body--static');
+      if (!body) return;
+
+      header.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('a')) return;
+        body.classList.toggle('elementor-toc__body--collapsed');
+      });
+    });
+  }
+
+  initAccordions();
+  initTocToggle();
+</script>
+
+<style is:global>
+  @import '../styles/elementor-page.css';
+</style>
+
+<style>
+  .elementor-page {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .elementor-page__inner {
+    max-width: var(--container-max);
+  }
+</style>
