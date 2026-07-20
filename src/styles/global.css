@@ -240,3 +240,69 @@ p {
 .prose a:hover {
   opacity: 0.8;
 }
+
+/* Shared breadcrumbs */
+.page-breadcrumbs {
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.page-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.4rem;
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-nav);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+
+.page-breadcrumbs__list > li {
+  display: inline-flex;
+  align-items: center;
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+.page-breadcrumbs__list > li::marker {
+  content: none;
+}
+
+.page-breadcrumbs__item {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+}
+
+.page-breadcrumbs__sep {
+  margin: 0;
+  padding: 0;
+  color: var(--color-muted);
+  opacity: 0.7;
+  user-select: none;
+}
+
+.page-breadcrumbs__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+
+.page-breadcrumbs__link:hover {
+  opacity: 0.65;
+}
+
+.page-breadcrumbs__current {
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(42ch, 70vw);
+  display: inline-block;
+  vertical-align: bottom;
+}

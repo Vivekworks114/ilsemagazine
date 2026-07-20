@@ -26,6 +26,15 @@ __pycache__/
 # Migration artifacts
 migration-summary.json
 
+# Never keep scratch/debug HTML in project root — page HTML lives in src/data/page-html/
+/*.html
+/.tmp/
+/_*.tmp.json
+/_*.txt
+
 # Editor
 .idea/
 .vscode/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

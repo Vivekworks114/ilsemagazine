@@ -1,61 +1,180 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { injectTableOfContents } from '../lib/toc';
+import { normalizeBreadcrumbs } from '../lib/breadcrumbs';
+import { ensureArticleTitle } from '../lib/article-title';
+import { injectFeaturedImage, isUsableFeaturedImage } from '../lib/featured-image';
 
 interface Props {
   title: string;
   description?: string;
   html: string;
+  featuredImage?: string;
 }
 
-const { title, description, html } = Astro.props;
+const { title, description, html, featuredImage } = Astro.props;
+const processedHtml = injectTableOfContents(
+  injectFeaturedImage(
+    ensureArticleTitle(normalizeBreadcrumbs(html), title),
+    featuredImage,
+    title
+  )
+);
+const ogImage = isUsableFeaturedImage(featuredImage) ? featuredImage : undefined;
 ---
-<BaseLayout title={title} description={description}>
-  <slot name="header" />
+<BaseLayout title={title} description={description} image={ogImage}>
+  <slot name="header" slot="header" />
 
   <article class="elementor-page">
     <div class="elementor-page__inner container">
-      <div class="elementor-content" set:html={html} />
+      <div class="elementor-content" set:html={processedHtml} />
     </div>
   </article>
 
-  <slot name="footer" />
+  <slot name="footer" slot="footer" />
 </BaseLayout>
 
 <script>
+  function hydrateLazyImages() {
+    document.querySelectorAll('img[data-lazy-src]').forEach((img) => {
+      const el = img;
+      const lazySrc = el.getAttribute('data-lazy-src');
+      if (lazySrc) {
+        el.setAttribute('src', lazySrc);
+        el.removeAttribute('data-lazy-src');
+      }
+      const lazySrcset = el.getAttribute('data-lazy-srcset');
+      if (lazySrcset) {
+        el.setAttribute('srcset', lazySrcset);
+        el.removeAttribute('data-lazy-srcset');
+      }
+      const lazySizes = el.getAttribute('data-lazy-sizes');
+      if (lazySizes) {
+        el.setAttribute('sizes', lazySizes);
+        el.removeAttribute('data-lazy-sizes');
+      }
+    });
+  }
+
   function initAccordions() {
     document.querySelectorAll('.elementor-accordion-item').forEach((item) => {
       const title = item.querySelector('.elementor-tab-title');
       const content = item.querySelector('.elementor-tab-content');
       if (!title || !content) return;
 
+      content.hidden = true;
       content.style.display = 'none';
       title.setAttribute('aria-expanded', 'false');
 
-      title.addEventListener('click', () => {
+      const toggle = () => {
         const expanded = title.getAttribute('aria-expanded') === 'true';
         title.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
         content.style.display = expanded ? 'none' : 'block';
         item.classList.toggle('elementor-active', !expanded);
+      };
+
+      title.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggle();
       });
+
+      title.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+
+    // Fallback: style FAQ headings when :has() is unavailable
+    document.querySelectorAll('.elementor-widget-accordion').forEach((accordion) => {
+      const prev = accordion.previousElementSibling;
+      if (prev?.classList.contains('elementor-widget-heading')) {
+        prev.classList.add('is-faq-heading');
+      }
     });
   }
 
   function initTocToggle() {
-    document.querySelectorAll('.elementor-toc__header').forEach((header) => {
+    document.querySelectorAll('.elementor-widget-table-of-contents').forEach((widget) => {
+      const header = widget.querySelector('.elementor-toc__header');
       const body =
-        header.parentElement?.querySelector('.elementor-toc__body') ??
-        header.parentElement?.querySelector('.elementor-toc__body--static');
-      if (!body) return;
+        widget.querySelector('.elementor-toc__body') ??
+        widget.querySelector('.elementor-toc__body--static');
+      if (!header || !body) return;
+
+      header.setAttribute('role', 'button');
+      header.setAttribute('tabindex', '0');
+      header.setAttribute('aria-expanded', 'true');
+
+      const toggle = () => {
+        const collapsed = body.classList.toggle('elementor-toc__body--collapsed');
+        widget.classList.toggle('is-collapsed', collapsed);
+        header.setAttribute('aria-expanded', String(!collapsed));
+      };
 
       header.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).closest('a')) return;
-        body.classList.toggle('elementor-toc__body--collapsed');
+        if (e.target.closest('a')) return;
+        toggle();
+      });
+
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
       });
     });
   }
 
+  function initTocLinks() {
+    document.querySelectorAll('.elementor-toc__link[href^="#"]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href || href === '#') return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.pushState(null, '', href);
+      });
+    });
+  }
+
+  function layoutProductCards() {
+    // Product columns keep the live Elementor 50/50 grid via CSS.
+    // Only normalize float images that lack sizing classes.
+    document
+      .querySelectorAll('.elementor-inner-section img.alignleft, .elementor-inner-section img.size-medium')
+      .forEach((img) => {
+        img.removeAttribute('align');
+        (img as HTMLImageElement).style.float = 'none';
+      });
+  }
+
+  function cleanupBrokenBreadcrumbs() {
+    document.querySelectorAll('.page-breadcrumbs__current, .page-breadcrumbs__link').forEach((el) => {
+      const text = (el.textContent || '').trim();
+      if (/[<>]|breadcrumb|id="|class="/i.test(text)) {
+        const nav = el.closest('.page-breadcrumbs');
+        if (!nav) return;
+        const title =
+          document.querySelector('.article-page__title, h1.elementor-heading-title, h1')
+            ?.textContent?.trim() || document.title.split('|')[0].trim();
+        nav.innerHTML = `<ol class="page-breadcrumbs__list"><li class="page-breadcrumbs__item"><a class="page-breadcrumbs__link" href="/">Home</a></li><li class="page-breadcrumbs__sep" aria-hidden="true">&gt;</li><li class="page-breadcrumbs__item" aria-current="page"><span class="page-breadcrumbs__current"></span></li></ol>`;
+        const current = nav.querySelector('.page-breadcrumbs__current');
+        if (current) current.textContent = title;
+      }
+    });
+  }
+
+  hydrateLazyImages();
+  layoutProductCards();
+  cleanupBrokenBreadcrumbs();
   initAccordions();
   initTocToggle();
+  initTocLinks();
 </script>
 
 <style is:global>
@@ -64,10 +183,14 @@ const { title, description, html } = Astro.props;
 
 <style>
   .elementor-page {
-    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+    padding-block: clamp(1.75rem, 4vw, 3rem) clamp(2.5rem, 6vw, 4.5rem);
+    background:
+      radial-gradient(41.56% 41.56% at 85% 20%, #e6c9b8 0%, transparent 70%),
+      radial-gradient(50% 50% at 15% 80%, rgba(230, 201, 184, 0.45) 0%, transparent 65%),
+      var(--color-bg);
   }
 
   .elementor-page__inner {
-    max-width: var(--container-max);
+    max-width: min(1180px, 100% - 2rem);
   }
 </style>

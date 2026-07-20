@@ -1,0 +1,460 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+import {
+  getSitemapPages,
+  getSitemapProducts,
+} from '../../data/sitemap';
+
+const blogPosts = (await getCollection('blog')).sort((a, b) =>
+  a.data.title.localeCompare(b.data.title, 'nl')
+);
+
+const recentPosts = [...blogPosts]
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 5);
+
+const blogByCategory = new Map<string, { title: string; href: string }[]>();
+for (const post of blogPosts) {
+  const cats =
+    post.data.categories && post.data.categories.length > 0
+      ? post.data.categories
+      : ['Blog'];
+  for (const cat of cats) {
+    const list = blogByCategory.get(cat) ?? [];
+    list.push({
+      title: post.data.title,
+      href: `/${post.id}/`,
+    });
+    blogByCategory.set(cat, list);
+  }
+}
+
+const categoryGroups = [...blogByCategory.entries()]
+  .map(([category, links]) => ({
+    category,
+    links: links.sort((a, b) => a.title.localeCompare(b.title, 'nl')),
+  }))
+  .sort((a, b) => a.category.localeCompare(b.category, 'nl'));
+
+const paginaLinks = getSitemapPages();
+const productLinks = getSitemapProducts();
+
+function formatDate(date: Date): string {
+  const months = [
+    'januari', 'februari', 'maart', 'april', 'mei', 'juni',
+    'juli', 'augustus', 'september', 'oktober', 'november', 'december',
+  ];
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+---
+<BaseLayout
+  title="Sitemap"
+  description="Overzicht van alle pagina's, top 10 reviews en blogartikelen op IlseMagazine.nl."
+>
+  <Header slot="header" />
+
+  <article class="sitemap-page">
+    <div class="sitemap-page__inner container">
+      <div class="sitemap-page__layout">
+        <div class="sitemap-page__main">
+          <nav class="page-breadcrumbs reveal" aria-label="Breadcrumb">
+            <ol class="page-breadcrumbs__list">
+              <li class="page-breadcrumbs__item">
+                <a class="page-breadcrumbs__link" href="/">Home</a>
+              </li>
+              <li class="page-breadcrumbs__sep" aria-hidden="true">›</li>
+              <li class="page-breadcrumbs__item" aria-current="page">
+                <span class="page-breadcrumbs__current">Sitemap</span>
+              </li>
+            </ol>
+          </nav>
+
+          <header class="sitemap-page__header reveal">
+            <h1>Sitemap</h1>
+            <p class="sitemap-page__lead">
+              Alle pagina's, top 10 reviews en artikelen van IlseMagazine.nl op één plek.
+            </p>
+            <time datetime="2022-12-16">december 16, 2022</time>
+          </header>
+
+          <section id="paginas" class="sitemap-section reveal">
+            <h2>Pagina's</h2>
+            <ul class="sitemap-grid">
+              {paginaLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section id="custom-posts" class="sitemap-section reveal">
+            <h2>Custom Posts</h2>
+            <p class="sitemap-section__note">
+              {productLinks.length} top 10 reviews
+            </p>
+            <ul class="sitemap-grid sitemap-grid--dense">
+              {productLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section id="berichten" class="sitemap-section reveal">
+            <h2>Berichten per categorie</h2>
+            {categoryGroups.map((group) => (
+              <div class="sitemap-category">
+                <h3>Categorie: {group.category}</h3>
+                <ul class="sitemap-grid sitemap-grid--dense">
+                  {group.links.map((link) => (
+                    <li>
+                      <a href={link.href}>{link.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        </div>
+
+        <aside class="sitemap-page__aside reveal">
+          <div class="sitemap-toc">
+            <button type="button" class="sitemap-toc__header" id="sitemap-toc-toggle" aria-expanded="true" aria-controls="sitemap-toc-body">
+              <span>Inhoudsopgave</span>
+            </button>
+            <nav id="sitemap-toc-body" class="sitemap-toc__body" aria-label="Inhoudsopgave">
+              <ol class="sitemap-toc__list">
+                <li><a href="#paginas">Pagina's</a></li>
+                <li><a href="#custom-posts">Custom Posts</a></li>
+                <li><a href="#berichten">Berichten per categorie</a></li>
+              </ol>
+            </nav>
+          </div>
+
+          <div class="sitemap-related">
+            <h2>Andere artikelen</h2>
+            <ul class="sitemap-related__list">
+              {recentPosts.map((post) => (
+                <li class="sitemap-related__item">
+                  <a href={`/${post.id}/`} class="sitemap-related__thumb">
+                    <img
+                      src={post.data.featuredImage ?? '/wp-content/uploads/2025/12/18982.jpg'}
+                      alt=""
+                      width="320"
+                      height="200"
+                      loading="lazy"
+                    />
+                  </a>
+                  <div class="sitemap-related__text">
+                    <a href={`/${post.id}/`} class="sitemap-related__title">
+                      {post.data.title}
+                    </a>
+                    <time datetime={post.data.pubDate.toISOString()}>
+                      {formatDate(post.data.pubDate)}
+                    </time>
+                    <a href={`/${post.id}/`} class="sitemap-related__more">
+                      Lees verder →
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </article>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<script>
+  const toggle = document.getElementById('sitemap-toc-toggle');
+  const body = document.getElementById('sitemap-toc-body');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    body?.classList.toggle('is-collapsed', open);
+    toggle.parentElement?.classList.toggle('is-collapsed', open);
+  });
+</script>
+
+<style>
+  .sitemap-page {
+    padding-block: clamp(1.75rem, 4vw, 3rem) clamp(3rem, 7vw, 5rem);
+    background:
+      radial-gradient(42% 42% at 88% 8%, #e6c9b8 0%, transparent 68%),
+      radial-gradient(36% 36% at 8% 70%, rgba(230, 201, 184, 0.35) 0%, transparent 70%),
+      var(--color-bg);
+  }
+
+  .sitemap-page__inner {
+    max-width: min(1180px, 100%);
+  }
+
+  .sitemap-page__layout {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+
+  @media (min-width: 1025px) {
+    .sitemap-page__layout {
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    }
+
+    .sitemap-page__aside {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+
+  .sitemap-page__header {
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+
+  .sitemap-page__header h1 {
+    font-size: clamp(2rem, 4.5vw, 2.85rem);
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.015em;
+  }
+
+  .sitemap-page__lead {
+    margin: 0 0 1rem;
+    max-width: 40ch;
+    font-size: clamp(1rem, 1.5vw, 1.125rem);
+    color: var(--color-muted);
+    line-height: 1.55;
+  }
+
+  .sitemap-page__header time {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .sitemap-section {
+    margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
+    scroll-margin-top: 1.5rem;
+  }
+
+  .sitemap-section h2 {
+    font-size: clamp(1.5rem, 3vw, 1.875rem);
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(15, 15, 15, 0.12);
+  }
+
+  .sitemap-section__note {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-nav);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  .sitemap-category {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sitemap-category h3 {
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+
+  .sitemap-grid {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem 1.5rem;
+  }
+
+  @media (min-width: 600px) {
+    .sitemap-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 900px) {
+    .sitemap-grid--dense {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .sitemap-grid li {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid rgba(15, 15, 15, 0.06);
+  }
+
+  .sitemap-grid a {
+    display: block;
+    padding: 0.7rem 0;
+    font-family: var(--font-body);
+    font-size: 0.9875rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    line-height: 1.35;
+    transition: opacity var(--transition), padding-left var(--transition);
+  }
+
+  .sitemap-grid a:hover {
+    opacity: 0.7;
+    padding-left: 0.35rem;
+  }
+
+  /* Sidebar TOC */
+  .sitemap-toc {
+    margin-bottom: 2rem;
+  }
+
+  .sitemap-toc__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-align: left;
+  }
+
+  .sitemap-toc__header::after {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-135deg);
+    margin-top: 0.3em;
+    transition: transform var(--transition);
+  }
+
+  .sitemap-toc.is-collapsed .sitemap-toc__header::after {
+    transform: rotate(45deg);
+    margin-top: 0;
+  }
+
+  .sitemap-toc__body {
+    margin-top: 0.75rem;
+  }
+
+  .sitemap-toc__body.is-collapsed {
+    display: none;
+  }
+
+  .sitemap-toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sitemap-toc__list a {
+    display: block;
+    padding: 0.4rem 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: opacity var(--transition);
+  }
+
+  .sitemap-toc__list a:hover {
+    opacity: 0.65;
+  }
+
+  /* Related articles */
+  .sitemap-related h2 {
+    font-size: 1.25rem;
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(15, 15, 15, 0.12);
+  }
+
+  .sitemap-related__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sitemap-related__item {
+    padding: 1.15rem 0;
+    border-bottom: 1px solid rgba(15, 15, 15, 0.08);
+  }
+
+  .sitemap-related__item:last-child {
+    border-bottom: none;
+  }
+
+  .sitemap-related__thumb {
+    display: block;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    background: var(--color-bg-warm);
+  }
+
+  .sitemap-related__thumb img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .sitemap-related__item:hover .sitemap-related__thumb img {
+    transform: scale(1.03);
+  }
+
+  .sitemap-related__title {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    line-height: 1.3;
+    margin-bottom: 0.4rem;
+  }
+
+  .sitemap-related__text time {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.45rem;
+  }
+
+  .sitemap-related__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-nav);
+    font-size: 0.8125rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: gap var(--transition), opacity var(--transition);
+  }
+
+  .sitemap-related__more:hover {
+    gap: 0.6rem;
+    opacity: 0.7;
+  }
+</style>

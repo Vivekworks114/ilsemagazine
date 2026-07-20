@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { isUsableFeaturedImage } from '../lib/featured-image';
 
 interface Props {
   entry: CollectionEntry<'blog'>;
@@ -16,22 +17,26 @@ function formatDate(date: Date): string {
 }
 
 const slug = entry.id;
-const image = entry.data.featuredImage ?? '/images/2022/Rectangle-1-1.png';
+const image = isUsableFeaturedImage(entry.data.featuredImage)
+  ? entry.data.featuredImage
+  : undefined;
 const imageAlt = entry.data.imageAlt ?? entry.data.title;
 const postUrl = `/${slug}/`;
 ---
 <article class="blog-card reveal">
   <a href={postUrl} class="blog-card__link">
-    <div class="blog-card__image-wrap">
-      <img
-        src={image}
-        alt={imageAlt}
-        class="blog-card__image"
-        width="800"
-        height="450"
-        loading="lazy"
-      />
-    </div>
+    {image && (
+      <div class="blog-card__image-wrap">
+        <img
+          src={image}
+          alt={imageAlt}
+          class="blog-card__image"
+          width="800"
+          height="450"
+          loading="lazy"
+        />
+      </div>
+    )}
     <div class="blog-card__content">
       <h3>{entry.data.title}</h3>
       <time class="blog-card__date" datetime={entry.data.pubDate.toISOString()}>

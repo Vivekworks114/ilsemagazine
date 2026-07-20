@@ -13,8 +13,32 @@ const { title, description, image, date } = Astro.props;
 <BaseLayout title={title} description={description} image={image}>
   <slot name="header" slot="header" />
   <article class="article">
-    <header class="article__header container reveal">
-      <div class="article__hero">
+    <div class="article__layout container">
+      <header class="article__header reveal">
+        <nav class="page-breadcrumbs" aria-label="Breadcrumb">
+          <ol class="page-breadcrumbs__list">
+            <li class="page-breadcrumbs__item"><a class="page-breadcrumbs__link" href="/">Home</a></li>
+            <li class="page-breadcrumbs__sep" aria-hidden="true">›</li>
+            <li class="page-breadcrumbs__item" aria-current="page">
+              <span class="page-breadcrumbs__current">{title}</span>
+            </li>
+          </ol>
+        </nav>
+
+        {date && (
+          <time datetime={date}>
+            {new Date(date).toLocaleDateString('nl-NL', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+        )}
+        <h1>{title}</h1>
+        {description && <p class="article__excerpt">{description}</p>}
+      </header>
+
+      <div class="article__hero reveal">
         <img
           src={image}
           alt={title}
@@ -24,14 +48,10 @@ const { title, description, image, date } = Astro.props;
           class="article__image"
         />
       </div>
-      <div class="article__meta">
-        {date && <time datetime={date}>{new Date(date).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</time>}
-        <h1>{title}</h1>
-        {description && <p class="article__excerpt">{description}</p>}
+
+      <div class="article__body prose reveal">
+        <slot />
       </div>
-    </header>
-    <div class="article__body container prose reveal">
-      <slot />
     </div>
   </article>
   <slot name="footer" slot="footer" />
@@ -39,18 +59,43 @@ const { title, description, image, date } = Astro.props;
 
 <style>
   .article {
-    padding-block: clamp(2rem, 4vw, 3.5rem);
+    padding-block: clamp(1.75rem, 4vw, 3rem) clamp(2.5rem, 6vw, 4.5rem);
   }
 
-  .article__header {
-    margin-bottom: 2.5rem;
+  .article__layout {
+    max-width: min(760px, 100%);
+  }
+
+
+  .article__header time {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .article__header h1 {
+    font-size: clamp(1.875rem, 4.2vw, 2.75rem);
+    letter-spacing: -0.01em;
+    max-width: 22ch;
+    margin-bottom: 0.75rem;
+  }
+
+  .article__excerpt {
+    font-size: 1.125rem;
+    color: var(--color-muted);
+    max-width: 60ch;
+    margin: 0;
+    line-height: 1.6;
   }
 
   .article__hero {
-    margin-bottom: 2rem;
+    margin-block: 2rem 2.5rem;
     overflow: hidden;
-    aspect-ratio: 16 / 9;
-    max-height: 480px;
+    aspect-ratio: 16 / 10;
     background: var(--color-bg-warm);
   }
 
@@ -65,29 +110,19 @@ const { title, description, image, date } = Astro.props;
     transform: scale(1.02);
   }
 
-  .article__meta time {
-    display: block;
-    font-family: var(--font-nav);
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .article__meta h1 {
-    max-width: 20ch;
-    margin-bottom: 0.75rem;
-  }
-
-  .article__excerpt {
-    font-size: 1.125rem;
-    color: var(--color-muted);
-    max-width: 60ch;
-    margin: 0;
-  }
-
   .article__body {
-    padding-bottom: 3rem;
+    max-width: none;
+    line-height: 1.75;
+    font-size: clamp(1rem, 1.4vw, 1.0625rem);
+  }
+
+  @media (max-width: 599px) {
+    .article__header h1 {
+      max-width: none;
+    }
+
+    .article__hero {
+      aspect-ratio: 4 / 3;
+    }
   }
 </style>

@@ -12,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# All fetched Elementor HTML must live here only — never write .html to project root.
 HTML_DIR = ROOT / "src/data/page-html"
 PAGES_DIR = ROOT / "src/content/pages"
 BLOG_DIR = ROOT / "src/content/blog"
@@ -23,12 +24,11 @@ def curl(url: str) -> str:
     result = subprocess.run(
         ["curl", "-sfL", url],
         capture_output=True,
-        text=True,
         timeout=90,
     )
     if result.returncode != 0:
         raise RuntimeError(f"curl failed for {url}")
-    return result.stdout
+    return result.stdout.decode("utf-8", errors="replace")
 
 
 def yaml_quote(value: str) -> str:
@@ -38,6 +38,12 @@ def yaml_quote(value: str) -> str:
 
 def rewrite_urls(content: str) -> str:
     """Rewrite live site URLs to local paths — no image downloads (already migrated)."""
+    # Rating stars — always use local SVG (frankmagazine / broken protocol-relative URLs)
+    content = re.sub(
+        r"(?:https?:)?//(?:frankmagazine\.nl|ilsemagazine\.nl)?/?wp-content/uploads/2022/12/Vector18\.png",
+        "/wp-content/uploads/2022/12/star.svg",
+        content,
+    )
     content = re.sub(
         r"https?://(?:www\.)?ilsemagazine\.nl/wp-content/uploads/([^\s\"'<>]+)",
         r"/wp-content/uploads/\1",
